@@ -8,7 +8,7 @@
 
 - https://www.kaggle.com/ealaxi/paysim1
 
-![Line](https://github.com/Avdhesh-Varshney/WebMasterLog/assets/114330097/4b78510f-a941-45f8-a9d5-80ed0705e847)
+![Line](https://github.com/arihoatwib/Fraud-Detection-Using-ML-Model)
 
 
 <div align='center'>
@@ -79,7 +79,6 @@ There are 11 features and 6362620 entries in this dataset.
 * If error occurs, use `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass`.
 * Now, app.py is the flask app code. run the command "pip install -r requirements.txt" to install the required dependencies for the flask app.
 * You may need to install additional libraries for running the jupyter notebooks.
-* In case need help, Use video reference [link](/static/video/video.mp4)
 
 
 ### :zap: **WHAT I HAVE DONE**
@@ -92,7 +91,7 @@ There are 11 features and 6362620 entries in this dataset.
 * Split the parameters into training and testing sets.
 * Train the different models and get their accuracies and MSE & R2 scores even after tuning the hyper-parameters.
 * Even build a neural network and tune the parameters of their.
-* But Decision Tree Classifier Model gives promising performance on this dataset and classify and fit to the target variable with upto 99.97%.
+* But Random Forest Classifier Model gives promising performance on this dataset and classify and fit to the target variable with upto 99.97%.
 * Save the model into `.joblib` extension file and create a front-end for it.
 * Also creating a `requirements.txt` file for the model and website build-up.
 * Create a front-end using **FLASK** framework and create a user-friendly template.
@@ -169,12 +168,7 @@ There are 11 features and 6362620 entries in this dataset.
 </table>
 
 
-#### :zap: **Working Video**
-
-![video](./static/video/video.gif)
-
-
-![Line](https://github.com/Avdhesh-Varshney/WebMasterLog/assets/114330097/4b78510f-a941-45f8-a9d5-80ed0705e847)
+![Line](https://github.com/arihoatwib/Fraud-Detection-Using-ML-Model)
 
 <div align="center">
 
@@ -183,24 +177,11 @@ There are 11 features and 6362620 entries in this dataset.
   <table>
   <tr>
     <td align="center">
-      <a href="https://github.com/Avdhesh-Varshney">
-        <img src="https://github.com/Avdhesh-Varshney/CPMasterLog/assets/114330097/0b13fac7-e59d-40be-ac14-b76a28174e85" width=185px height=175px />
+      <a href="https://github.com/arihoatwib/Fraud-Detection-Using-ML-Model">
       </a></br> 
-      <h4 style="color:red;"><a href="https://github.com/Avdhesh-Varshney">Avdhesh Varshney</a></h4>
-      <a href="https://www.linkedin.com/in/avdhesh-varshney-5314a4233/">
-        <img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn" />
+      <h4 style="color:red;"><a href="https://github.com/arihoatwib">Ariho Atwibu Kazehi</a></h4>
+      <a href="https://www.linkedin.com/in/kazehi-atwibu-360883160/">
       </a>
   </tr>
   </table>
 </div>
-
-
-![Line](https://github.com/Avdhesh-Varshney/WebMasterLog/assets/114330097/4b78510f-a941-45f8-a9d5-80ed0705e847)
-
-<div align="center">
-  <h3>Show some &nbsp;❤️&nbsp; by &nbsp;🌟&nbsp; this repository!</h3>
-  <img src="https://media.giphy.com/media/LnQjpWaON8nhr21vNW/giphy.gif" width="60"> <em><b>I love connecting with different people</b> so if you want to say <b>hi, I'll be happy to meet you more!</b> :)</em>
-</div>
-
-<a href="#top"><img src="https://img.shields.io/badge/-Back%20to%20Top-red?style=for-the-badge" align="right"/></a>
-
