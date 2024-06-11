@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Online Payment Fraud Detection ML Model</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css"
+    integrity="sha384-VkooPx4CGj8/P3hxPz8/Qz8/Xj8NCj8/Pz8/P3g/ej8YP3ljPxQ/TD8TPz90PSE/Pw0K" crossorigin="anonymous">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+</head>
+<body>
+  <!-- User profile dropdown -->
+  <div class="user-profile">
+    <div class="dropdown">
+      <div class="profile-circle" id="profileCircle" aria-expanded="false">
+        {% if profile_pic %}
+          <img src="{{ url_for('static', filename='profile_pics/' + profile_pic) }}" class="profile-pic" alt="Profile Picture">
+        {% else %}
+          {{ user_initials }}
+        {% endif %}
+      </div>
+      <ul class="dropdown-menu" aria-labelledby="profileCircle">
+        <li class="dropdown-item text-center"><strong>{{ user_name }}</strong></li>
+        <li>
+          <form method="POST" action="{{ url_for('upload_profile_pic') }}" enctype="multipart/form-data" class="p-3">
+            <input type="file" name="profile_pic" class="form-control mb-3">
+            <button type="submit" class="btn btn-primary w-100">Upload</button>
+          </form>
+        </li>
+        <li><a class="dropdown-item text-center" href="{{ url_for('logout') }}">Logout</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="container mt-5">
+    <div class="card">
+      <div class="card-header text-center">
+        <h1>Online Payment Fraud Detection ML Model</h1>
+      </div>
+      <div class="card-body">
+        <form action="{{ url_for('prediction') }}" method="post" class="needs-validation" novalidate>
+          <div class="mb-3">
+            <label for="type" class="form-label">Type Value 
+              <i class="bi bi-info-circle" data-toggle="tooltip" data-placement="top" title="Select the type of transaction."></i>
+            </label>
+            <select class="form-select" name="type" id="type" required>
+              <option value="" disabled selected>Select transaction type</option>
+              <option value="1">CASH-IN</option>
+              <option value="2">CASH-OUT</option>
+              <option value="3">DEBIT</option>
+              <option value="4">PAYMENT</option>
+              <option value="5">TRANSFER</option>
+            </select>
+            <div class="invalid-feedback">Please select a transaction type.</div>
+          </div>
+          
+          <div class="mb-3">
+            <label for="amount" class="form-label">Amount 
+              <i class="bi bi-info-circle" data-toggle="tooltip" data-placement="top" title="Enter the transaction amount in local currency."></i>
+            </label>
+            <input type="number" class="form-control" name="amount" id="amount" placeholder="Enter amount" required>
+            <div class="invalid-feedback">Please enter the transaction amount.</div>
+          </div>
+          
+          <div class="mb-3">
+            <label for="oldbalanceOrg" class="form-label">Old Balance 
+              <i class="bi bi-info-circle" data-toggle="tooltip" data-placement="top" title="Enter the initial balance before the transaction."></i>
+            </label>
+            <input type="number" class="form-control" name="oldbalanceOrg" id="oldbalanceOrg" placeholder="Old balance" required>
+            <div class="invalid-feedback">Please enter the old balance.</div>
+          </div>
+          
+          <div class="mb-3">
+            <label for="newbalanceOrig" class="form-label">New Balance 
+              <i class="bi bi-info-circle" data-toggle="tooltip" data-placement="top" title="Enter the new balance after the transaction."></i>
+            </label>
+            <input type="number" class="form-control" name="newbalanceOrig" id="newbalanceOrig" placeholder="New balance" required>
+            <div class="invalid-feedback">Please enter the new balance.</div>
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100">Predict</button>
+        </form>
+      </div>
+    </div>
+    
+    {% if prediction_text %}
+    <div class="alert alert-info mt-3 text-center">
+      <p id="prediction" class="prediction-text {% if prediction_text == 'Fraud' %}fraud{% else %}not-fraud{% endif %}">
+      Prediction: <span>{{ prediction_text }}</span>
+      </p>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- JavaScript code for toggling dropdown menu -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  
+  <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}" 
+          integrity="sha384-P0huMg9gaT8/AxM/P0VIODVIP29yPzQ/Jz91cT9hPz8/PyE/P1k/Zj9HdxloP0k/DQo=" 
+          crossorigin="anonymous"></script>
+
+  <script>
+    (function () {
+      'use strict'
+      var forms = document.querySelectorAll('.needs-validation')
+      Array.prototype.slice.call(forms)
+        .forEach(function (form) {
+          form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+              event.preventDefault()
+              event.stopPropagation()
+            }
+            form.classList.add('was-validated')
+          }, false)
+        })
+    })()
+    
+    $(document).ready(function(){
+      $('[data-toggle="tooltip"]').tooltip();
+    });
+
+    var predictionTextElement = document.getElementById('prediction');
+    if (predictionTextElement) {
+      var predictionText = predictionTextElement.textContent.trim();
+      if (predictionText === 'Fraud') {
+        predictionTextElement.classList.add('fraud');
+        predictionTextElement.classList.remove('not-fraud');
+      } else {
+        predictionTextElement.classList.add('not-fraud');
+        predictionTextElement.classList.remove('fraud');
+      }
+    }
+  </script>
+
+</body>
+</html>
