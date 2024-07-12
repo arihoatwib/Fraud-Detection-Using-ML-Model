@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Payment Fraud Detection ML Model</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" 
+    integrity="sha384-LtrjvnR4ge+ZqfnrN0nKk+BZ6Xh7Vhx4k5c7yg7ZnW6J6n6F5u5f5+WZj6j6f5W2" crossorigin="anonymous">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+      body {
+        background: url("{{ url_for('static', filename='images/image_10.jpg') }}") no-repeat center center fixed;
+        background-size: cover;
+      }
+    </style>
+  </head>
+<body>
+  
+  <!-- User profile dropdown -->
+<div class="user-profile">
+  <div class="dropdown">
+    <div class="profile-circle" id="profileCircle" aria-expanded="false">
+      {% if profile_pic %}
+        <img src="{{ url_for('static', filename='profile_pics/' + profile_pic) }}" class="profile-pic rounded-circle" alt="Profile Picture">
+      {% else %}
+        <span class="user-initials">{{ user_initials }}</span>
+      {% endif %}
+    </div>
+    <ul class="dropdown-menu" aria-labelledby="profileCircle">
+      <li class="dropdown-item text-center"><strong>{{ user_name }}</strong></li>
+      <li>
+        <form method="POST" action="{{ url_for('upload_profile_pic') }}" enctype="multipart/form-data" class="p-3">
+          <input type="file" name="profile_pic" class="form-control mb-3">
+          <button type="submit" class="btn btn-primary w-100">Upload</button>
+        </form>
+      </li>
+      <li>
+        <a class="dropdown-item text-center" href="{{ url_for('home_page') }}">Home</a>
+      </li>
+      <li>
+        <a class="dropdown-item text-center" href="{{ url_for('admin_dashboard') }}">Dashboard</a>
+      </li>
+      <li><a class="dropdown-item text-center" href="{{ url_for('logout') }}">Logout</a></li>
+    </ul>
+  </div>
+</div>
+
+  <div class="container user_input_container mt-5">
+    <div class="card">
+      <div class="card-header text-center">
+        <h1>Online Payment Fraud Detection ML Model</h1>
+      </div>
+      <div class="card-body">
+        <form action="{{ url_for('prediction') }}" method="post" class="needs-validation" novalidate>
+          <div class="mb-3">
+            <label for="type" class="form-label">Type Value 
+              <i class="bi bi-info-circle" data-toggle="tooltip" data-placement="top" title="Select the type of transaction."></i>
+            </label>
+            <select class="form-select" name="type" id="type" required>
+              <option value="" disabled selected>Select transaction type</option>
+              <option value="1">CASH-IN</option>
+              <option value="2">CASH-OUT</option>
+              <option value="3">DEBIT</option>
+              <option value="4">PAYMENT</option>
+              <option value="5">TRANSFER</option>
+            </select>
+            <div class="invalid-feedback">Please select a transaction type.</div>
+          </div>
+          
+          <div class="mb-3">
+            <label for="amount" class="form-label">Amount 
+              <i class="bi bi-info-circle" data-toggle="tooltip" data-placement="top" title="Enter the transaction amount in local currency."></i>
+            </label>
+            <input type="number" class="form-control" name="amount" id="amount" placeholder="Enter amount" step="0.01" required>
+            <div class="invalid-feedback">Please enter the transaction amount.</div>
+          </div>
+          
+          <div class="mb-3">
+            <label for="oldbalanceOrg" class="form-label">Old Balance 
+              <i class="bi bi-info-circle" data-toggle="tooltip" data-placement="top" title="Enter the initial balance before the transaction."></i>
+            </label>
+            <input type="number" class="form-control" name="oldbalanceOrg" id="oldbalanceOrg" placeholder="Old balance" step="0.01" required>
+            <div class="invalid-feedback">Please enter the old balance.</div>
+          </div>
+          
+          <div class="mb-3">
+            <label for="newbalanceOrig" class="form-label">New Balance 
+              <i class="bi bi-info-circle" data-toggle="tooltip" data-placement="top" title="Enter the new balance after the transaction."></i>
+            </label>
+            <input type="number" class="form-control" name="newbalanceOrig" id="newbalanceOrig" placeholder="New balance" step="0.01" required>
+            <div class="invalid-feedback">Please enter the new balance.</div>
+          </div>
+        
+          <button type="submit" class="btn btn-primary w-100">Predict</button>
+        </form>        
+      </div>
+    </div>
+    
+    {% if prediction_text %}
+      <div class="alert alert-info mt-3 text-center">
+          <p id="prediction">Prediction: <span 
+            class="{% if prediction_text == 'Fraud' %}red-text{% else %}green-text{% endif %}">{{ prediction_text }}</span>
+          </p>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Additional HTML for file upload and fraud prediction table -->
+  <div class="container specific-container mt-5">
+    <h1 class="mb-4">Transaction Fraud Detection</h1>
+    <form id="uploadForm" enctype="multipart/form-data">
+        <div class="form-group">
+            <label for="file">Upload CSV File:</label>
+            <input type="file" class="form-control-file" id="file" name="file" accept=".csv">
+        </div>
+        <button type="submit" class="btn btn-primary">Upload</button>
+    </form>
+    <hr>
+    <div class="button-container">
+        <button id="predictButton" class="btn btn-success mb-3">Predict</button>
+        <button id="viewReportButton" class="btn btn-warning mb-3">View Report</button>
+        <button id="loadMoreButton" class="btn btn-secondary mb-3">Load More</button>
+    </div>
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+            <th>Type</th>
+            <th>Amount</th>
+            <th>Old Balance Org</th>
+            <th>New Balance Org</th>
+            <th>Prediction</th>
+        </tr>
+      </thead>
+        <tbody id="transactionsTable">
+            <!-- Transactions will be inserted here -->
+        </tbody>
+    </table>
+</div>
+  
+  <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    var currentPage = 1;
+
+    $(document).ready(function() {
+      $('#uploadForm').on('submit', function(event) {
+        event.preventDefault();
+        var formData = new FormData(this);
+        $.ajax({
+          url: '/upload',
+          type: 'POST',
+          data: formData,
+          processData: false,
+          contentType: false,
+          success: function(data) {
+            alert(data);
+          },
+          error: function() {
+            alert('Error uploading file.');
+          }
+        });
+      });
+
+      $('#predictButton').on('click', function() {
+                $.ajax({
+                    url: '/predict',
+                    type: 'GET',
+                    success: function(data) {
+                        alert('Prediction process completed on entire Transactions table.');
+                        // Fetch initial fraudulent transactions
+                        fetchFraudulentTransactions(1);
+                    },
+                    error: function() {
+                        alert('Error fetching predictions.');
+                    }
+                });
+            });
+
+            $('#loadMoreButton').on('click', function() {
+                fetchFraudulentTransactions(currentPage + 1);
+            });
+
+            $('#viewReportButton').on('click', function() {
+                window.location.href = '/dashboard';
+            });
+            function fetchFraudulentTransactions(page) {
+                $.ajax({
+                    url: '/get_fraudulent_transactions',
+                    type: 'GET',
+                    data: { page: page },
+                    success: function(data) {
+                        console.log(data); // Debugging line
+                        if (Array.isArray(data.transactions)) {
+                            displayFraudulentTransactions(data.transactions);
+                            currentPage = page;
+                        } else {
+                            alert('Unexpected data format received');
+                        }
+                    },
+                    error: function() {
+                        alert('Error loading more transactions.');
+                    }
+                });
+            }
+
+
+            function displayFraudulentTransactions(data) {
+                var tbody = $('#transactionsTable');
+                if (data.length === 0) {
+                    alert('No more fraudulent transactions to load.');
+                } else {
+                    data.forEach(function(row) {
+                        var tr = $('<tr>').addClass('fraud');
+                        tr.append($('<td>').text(row.type));
+                        tr.append($('<td>').text(row.amount));
+                        tr.append($('<td>').text(row.oldbalanceorg));
+                        tr.append($('<td>').text(row.newbalanceorg));
+                        tr.append($('<td>').text('Fraud'));
+                        tbody.append(tr);
+                    });
+                    alert('Loaded more fraudulent transactions.');
+                }
+            }
+        });
+  
+        $('#viewReportButton').on('click', function() {
+            var tableData = [];
+            $('#transactionsTable tr').each(function(row, tr) {
+                var type = $(tr).find('td:eq(0)').text();
+                if (type) {
+                    tableData.push({
+                        "type": $(tr).find('td:eq(0)').text(),
+                        "amount": $(tr).find('td:eq(1)').text(),
+                        "oldbalanceOrg": $(tr).find('td:eq(2)').text(),
+                        "newbalanceOrig": $(tr).find('td:eq(3)').text(),
+                        "Prediction": $(tr).find('td:eq(4)').text() === 'Fraud' ? 1 : 0
+                    });
+                }
+            });
+
+            console.log("Sending tableData to server:", tableData); // Print tableData to console for verification
+
+            fetch('/get_dashboard_data', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(tableData)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { throw new Error(err.error); });
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log("Received data from server:", data);  // Debugging line
+                // Assuming updateDashboard is a function defined in dashboard.js
+                updateDashboard(data);
+            })
+        });
+</script>
+
+  <!-- JavaScript code for toggling dropdown menu -->
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js" 
+  integrity="sha384-ZvpUoO/+PsdN6l9cz6i5iZmQ3LmTV30Vn0O6/D62ku1RVtmXx4kO2vNx5PEbq6J8" 
+  crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js" 
+  integrity="sha384-pzjw8f+ua7Kw1TtlQjQ7RHRb7NR1KK6dG3AvD6/D62ku1RVtmXx4kO2vNx5PEbq6J8" 
+  crossorigin="anonymous"></script>
+
+  <script>
+    (function () {
+      'use strict'
+      var forms = document.querySelectorAll('.needs-validation')
+      Array.prototype.slice.call(forms)
+        .forEach(function (form) {
+          form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+              event.preventDefault()
+              event.stopPropagation()
+            }
+            form.classList.add('was-validated')
+          }, false)
+        })
+    })()
+    
+    $(document).ready(function(){
+      $('[data-toggle="tooltip"]').tooltip();
+    });
+
+    var predictionTextElement = document.getElementById('prediction');
+    if (predictionTextElement) {
+      var predictionText = predictionTextElement.textContent.trim();
+      if (predictionText === 'Fraud') {
+        predictionTextElement.classList.add('fraud');
+        predictionTextElement.classList.remove('not-fraud');
+      } else {
+        predictionTextElement.classList.add('not-fraud');
+        predictionTextElement.classList.remove('fraud');
+      }
+    }
+  </script>
+
+<script src="{{ url_for('static', filename='js/profile.js') }}"></script>
+
+<script>
+  $('#reportButton').on('click', function() {
+      window.location.href = '/dashboard';
+  });
+</script>
+
+</body>
+</html>

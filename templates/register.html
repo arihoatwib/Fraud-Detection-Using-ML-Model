@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration</title>
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css"
+        integrity="sha384-VkooPx4CGj8/P3hxPz8/Qz8/Xj8NCj8/Pz8/P3g/ej8YP3ljPxQ/TD8TPz90PSE/Pw0K"
+        crossorigin="anonymous">
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+          background: url("{{ url_for('static', filename='images/image_6.jpg') }}") no-repeat center center fixed;
+          background-size: cover;
+        }
+
+        .container {
+        width: 600px;
+        margin: 0 auto; /* Optional: centers the container */
+        max-width: 600px;
+        padding: 2rem;        /*padding: 20px; */
+        background-color: #ffffff;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        height: 85%;
+        }
+        
+        /* Custom Navbar Styles */
+        .navbar-custom {
+            background-color: #007bff; /* Blue background color */
+            height: 50px; /* Smaller height */
+            width: 100%; /* Full width */
+            position: fixed; /* Fixed at the top */
+            top: 0;
+            left: 0;
+            z-index: 1030; /* Ensure it is above other content */
+        }
+        .navbar-custom .navbar-brand,
+        .navbar-custom .nav-link {
+            color: white; /* White text color */
+        }
+        .navbar-custom .navbar-brand:hover,
+        .navbar-custom .nav-link:hover {
+            color: #ffdd57; /* Change color on hover */
+        }
+        .navbar-custom .navbar-toggler-icon {
+            color: white; /* White color for toggler icon */
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-custom">
+        <a class="navbar-brand" href="#">RoyalTech Company (U) LTD</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                {% if 'user_id' in session %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('home_page') }}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('login') }}">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('login') }}">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('home_page') }}">Home</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+    <div class="container mt-5">
+        <h1 class="text-center">Registration</h1>
+        <form method="POST" class="needs-validation" novalidate>
+            {{ form.csrf_token }}
+            <div class="mb-3">
+                {{ form.username.label(class="form-label") }}
+                {{ form.username(class="form-control", size=20) }}
+                {% for error in form.username.errors %}
+                <div class="invalid-feedback d-block">{{ error }}</div>
+                {% endfor %}
+            </div>
+            <div class="mb-3">
+                {{ form.email.label(class="form-label") }}
+                {{ form.email(class="form-control", size=20) }}
+                {% for error in form.email.errors %}
+                <div class="invalid-feedback d-block">{{ error }}</div>
+                {% endfor %}
+            </div>
+            <div class="password-container mb-3">
+                {{ form.password.label(class="form-label") }}
+                {{ form.password(class="form-control", size=20, id="password") }}
+                <span class="eye-icon" id="password-eye" onclick="togglePassword('password', 'password-checkbox')">&#128065;</span>
+                <div class="show-password-container">
+                    <input type="checkbox" class="show-password-checkbox" id="password-checkbox" onclick="togglePassword('password', 'password-checkbox')"> 
+                    <label for="password-checkbox">Show Password</label>
+                </div>
+                {% for error in form.password.errors %}
+                <div class="invalid-feedback d-block">{{ error }}</div>
+                {% endfor %}
+            </div>
+            <div class="password-container mb-3">
+                {{ form.confirm_password.label(class="form-label") }}
+                {{ form.confirm_password(class="form-control", size=20, id="confirm_password") }}
+                <span class="eye-icon" id="confirm_password-eye" onclick="togglePassword('confirm_password', 'confirm-password-checkbox')">&#128065;</span>
+                <div class="show-password-container">
+                    <input type="checkbox" class="show-password-checkbox" id="confirm-password-checkbox" onclick="togglePassword('confirm_password', 'confirm-password-checkbox')"> 
+                    <label for="confirm-password-checkbox">Show Password</label>
+                </div>
+                {% for error in form.confirm_password.errors %}
+                <div class="invalid-feedback d-block">{{ error }}</div>
+                {% endfor %}
+            </div>
+            <div class="mb-3">
+                {{ form.role.label(class="form-label") }}
+                {{ form.role(class="form-control", id="role") }}
+            </div>
+            <div>
+                {{ form.submit(class="btn btn-primary w-100") }}
+            </div>
+        </form>
+    
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <div class="alert alert-danger mt-3">
+            <ul class="mb-0">
+                {% for message in messages %}
+                <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        {% endwith %}
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        function togglePassword(fieldId, checkboxId) {
+            const field = document.getElementById(fieldId);
+            const checkbox = document.getElementById(checkboxId);
+            const eyeIcon = document.getElementById(fieldId + '-eye');
+            const isPasswordVisible = checkbox.checked || field.type === 'text';
+
+            field.type = isPasswordVisible ? 'password' : 'text';
+            checkbox.checked = isPasswordVisible ? false : true;
+
+            // Optionally, change the eye icon to indicate visibility
+            eyeIcon.innerHTML = isPasswordVisible ? '&#128065;' : '&#128064;';
+        }
+    </script>
+    <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"
+        integrity="sha384-P0huMg9gaT8/AxM/P0VIODVIP29yPzQ/Jz91cT9hPz8/PyE/P1k/Zj9HdxloP0k/DQo="
+        crossorigin="anonymous"></script>
+</body>
+
+</html>

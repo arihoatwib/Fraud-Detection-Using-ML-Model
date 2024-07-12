@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background: url("{{ url_for('static', filename='images/image_14.jpg') }}") no-repeat center center fixed;
+            background-size: cover;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+            max-height: 100%;
+            min-height: 1200px;
+        }
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        .button-group .btn {
+            margin-left: 10px;
+        }
+        .button-group .btn-primary {
+            background-color: green;
+            border-color: green;
+        }
+        .button-group .btn-primary:hover {
+            background-color: rgb(20, 20, 201);
+            border-color: rgb(26, 26, 192);
+        }
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .col-md-6 {
+            flex: 0 0 50%;
+            max-width: 50%;
+            padding: 10px;
+        }
+        canvas {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="mb-4">Dashboard</h1>
+        <!-- Dashboard content -->
+        <div class="row">
+            <div class="col-md-6">
+                <canvas id="fraudChart"></canvas>
+            </div>
+            <div class="col-md-6">
+                <canvas id="typeChart"></canvas>
+            </div>
+            <div class="col-md-6">
+                <canvas id="typeFraudChart"></canvas>
+            </div>
+            <!-- Add more chart divs here as needed -->
+        </div>
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <div class="button-group">
+                    <button id="downloadReportButton" class="btn btn-primary">Download Report as PDF</button>
+                    <a href="{{ url_for('index') }}" class="btn btn-secondary" style="margin-left: auto;">Back to Index</a>
+                    <a class="btn btn-secondary" href="{{ url_for('admin_dashboard') }}">Back to Admin Dashboard</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</body>
+</html>

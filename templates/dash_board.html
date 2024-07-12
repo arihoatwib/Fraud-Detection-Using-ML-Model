@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/3.1.3/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: url("{{ url_for('static', filename='images/image_14.jpg') }}") no-repeat center center fixed;
+            background-size: cover;
+            font-family: 'Roboto', Arial, sans-serif;
+            background-color: greenyellow;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .navbar-custom {
+            background-color: #007bff;
+            height: 50px;
+            width: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1030;
+        }
+        .navbar-custom .navbar-brand,
+        .navbar-custom .nav-link {
+            color: white;
+        }
+        .navbar-custom .navbar-brand:hover,
+        .navbar-custom .nav-link:hover {
+            color: #ffdd57;
+        }
+        .navbar-custom .navbar-toggler-icon {
+            color: white;
+        }
+        html, body {
+            height: 100%;
+            overflow: auto;
+            padding-top: 50px;
+        }
+        .chart-container {
+            margin-top: 30px;
+        }
+        .chart-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+        .chart-item {
+            flex: 0 0 48%;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-custom">
+        <a class="navbar-brand" href="#" style="color:#740574;font-family: 'Roboto', Times New Roman, sans-serif;">RoyalTech Company (U) LTD</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                {% if 'user_id' in session %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('home_page') }}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('admin_dashboard') }}">Admin Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('login') }}">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('register') }}">Register</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1 style="color:#740574;font-family: 'Roboto', Times New Roman, sans-serif;">Fraud Analysis Dashboard</h1>
+        <div id="updates"></div>
+        
+        <!-- Statistics Table -->
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Period</th>
+                    <th>Fraud Transactions</th>
+                    <th>Not Fraud Transactions</th>
+                    <th>Total Payments</th>
+                </tr>
+            </thead>
+            <tbody id="stats-table-body">
+                <!-- Data will be inserted here -->
+            </tbody>
+        </table>
+
+        <div class="chart-container">
+            <div class="chart-row">
+                <div class="chart-item">
+                    <canvas id="dailyChart" class="chart-spacing"></canvas>
+                </div>
+                <div class="chart-item">
+                    <canvas id="weeklyChart" class="chart-spacing"></canvas>
+                </div>
+            </div>
+            <div class="chart-row">
+                <div class="chart-item">
+                    <canvas id="monthlyChart" class="chart-spacing"></canvas>
+                </div>
+                <div class="chart-item">
+                    <canvas id="statusChart" class="chart-spacing"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port);
+        var dailyCtx = document.getElementById('dailyChart').getContext('2d');
+        var weeklyCtx = document.getElementById('weeklyChart').getContext('2d');
+        var monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+        var statusCtx = document.getElementById('statusChart').getContext('2d');
+
+        function renderChart(ctx, labels, data, title, yLabel) {
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Fraud',
+                        data: data.fraud,
+                        backgroundColor: 'magenta',
+                        barPercentage: 0.8, // Adjust the width of the bars relative to the category width
+                        categoryPercentage: 0.9 // Adjust the space between bars within the same category
+                    }, {
+                        label: 'Not Fraud',
+                        data: data.not_fraud,
+                        backgroundColor: 'green',
+                        barPercentage: 0.8, // Adjust the width of the bars relative to the category width
+                        categoryPercentage: 2 // Adjust the space between bars within the same category
+                    }]
+                },
+                options: {
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            align: 'end',
+                            labels: {
+                                color: '#333',
+                                font: {
+                                    weight: 'bold'
+                                }
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: title,
+                            fontSize: 18,
+                            fontColor: '#333',
+                            font: {
+                                weight: 'bold'
+                            }
+                        }
+                    },
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                font: {
+                                    weight: 'bold',
+                                    size: 14
+                                },
+                                color: '#333'
+                            },
+                            title: {
+                                display: true,
+                                text: yLabel,
+                                font: {
+                                    weight: 'bold',
+                                    size: 16
+                                },
+                                color: '#333'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                font: {
+                                    weight: 'bold',
+                                    size: 14
+                                },
+                                color: '#333'
+                            },
+                            title: {
+                                display: true,
+                                text: 'Transaction Type',
+                                font: {
+                                    weight: 'bold',
+                                    size: 16
+                                },
+                                color: '#333'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function fetchDataAndRenderCharts() {
+            fetch('/analytics', {
+                headers: {
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok ' + response.statusText);
+                }
+                return response.json();
+            })
+            .then(data => {
+                document.getElementById('stats-table-body').innerHTML = `
+                    <tr>
+                        <td>Daily</td>
+                        <td>${data.daily_fraud_count}</td>
+                        <td>${data.daily_not_fraud_count}</td>
+                        <td>${data.daily_total}</td>
+                    </tr>
+                    <tr>
+                        <td>Weekly</td>
+                        <td>${data.weekly_fraud_count}</td>
+                        <td>${data.weekly_not_fraud_count}</td>
+                        <td>${data.weekly_total}</td>
+                    </tr>
+                    <tr>
+                        <td>Monthly</td>
+                        <td>${data.monthly_fraud_count}</td>
+                        <td>${data.monthly_not_fraud_count}</td>
+                        <td>${data.monthly_total}</td>
+                    </tr>
+                `;
+
+                renderChart(dailyCtx,['Fraud','Not Fraud'], { fraud: [data.daily_fraud_total], not_fraud: [data.daily_not_fraud_total] }, 'Bar Chart showing Daily Transactions', 'Amount');
+                renderChart(weeklyCtx,['Fraud','Not Fraud'], { fraud: [data.weekly_fraud_total], not_fraud: [data.weekly_not_fraud_total] }, 'Bar Chart showing Weekly Transactions', 'Amount');
+                renderChart(monthlyCtx,['Fraud','Not Fraud'], { fraud: [data.monthly_fraud_total], not_fraud: [data.monthly_not_fraud_total] }, 'Bar Chart showing Monthly Transactions', 'Amount');
+                renderChart(statusCtx,['Fraud','Not Fraud'], { fraud: [data.status_counts.find(sc => sc.status === 'Fraud').count], not_fraud: [data.status_counts.find(sc => sc.status === 'Not Fraud').count] }, 'Bar Chart showing Counts Per Transactions Status', 'Count');
+            })
+            .catch(error => console.error('Error fetching analytics data:', error));
+        }
+
+        fetchDataAndRenderCharts();
+
+        socket.on('new_transaction', function(data) {
+            $('#updates').prepend('<p>New transaction processed. Check the updated statistics.</p>');
+            fetchDataAndRenderCharts();
+        });
+    </script>
+</body>
+</html>

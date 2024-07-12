@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>RoyalTech Company (U) LTD</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            background: url("{{ url_for('static', filename='images/image_8.jpg') }}") no-repeat center center fixed;
+            background-size: cover;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 10px;
+            margin-top: 50px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+        /* Individual service box */
+        .service {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin: 10px;
+            border-radius: 5px;
+            background-color: #fff;
+            flex: 1 1 calc(50% - 20px); /* 50% width minus margin */
+            box-sizing: border-box;
+        }
+        .service h3 {
+            color: #007bff;
+            margin-top: 0;
+        }
+        .service p {
+            font-size: 16px;
+        }
+        .service-price {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #aa0987;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin-top: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+        /* Custom Navbar Styles */
+        .navbar-custom {
+            background-color: #007bff; /* Blue background color */
+            height: 50px; /* Smaller height */
+            width: 100%; /* Full width */
+            position: fixed; /* Fixed at the top */
+            top: 0;
+            left: 0;
+            z-index: 1030; /* Ensure it is above other content */
+        }
+        .navbar-custom .navbar-brand,
+        .navbar-custom .nav-link {
+            color: white; /* White text color */
+            background-color: #007bff; 
+        }
+        .navbar-custom .navbar-brand:hover,
+        .navbar-custom .nav-link:hover {
+            color: #ffdd57; /* Change color on hover */
+        }
+        .navbar-custom .navbar-toggler-icon {
+            color: white; /* White color for toggler icon */
+        }
+        .cart {
+            margin-top: 30px;
+        }
+        .center-text {
+            text-align: center; /* Center align the text within the container */
+        }
+        .cart-table {
+            width: 100%;
+            margin-top: 20px;
+        }
+        .cart-table th, .cart-table td {
+            padding: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="#" style="font-family: Roboto, sans-serif; font-weight: bold; color: purple;">RoyalTech Company (U) LTD</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('home_page') }}">Home</a>
+                </li>
+                {% if 'user_id' in session %}
+                    {% if session['role'] == 'admin' %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('analytics') }}">Analytics</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('dash_board') }}">Dash_board</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('index') }}">Main</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('payment') }}">Payments</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('dashboard') }}">Dashboard</a>
+                        </li>
+                    {% elif session['role'] == 'user' %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('payment') }}">Payment</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('login') }}">Login</a>
+                        </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('login') }}">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('register') }}">Register</a>
+                    </li>
+                {% endif %}
+                <li class="nav-item">
+                    <a class="nav-link" href="#" onclick="viewCart()">View Cart</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+<div class="container">
+    <h1 class="center-text" style="font-family: Roboto, sans-serif; font-weight: bold; color:#aa0987">Welcome to RoyalTech Company (U) LTD</h1>
+    <p>Your leading partner in software development, data analytics, IT consultancy, and software sales.</p>
+
+    <div class="service">
+        <h3>Software Development</h3>
+        <p>We offer custom software solutions tailored to your business needs.</p>
+        <p>Services:</p>
+        <ul>
+            <li>Web Application Development</li>
+            <li>Mobile App Development</li>
+            <li>Enterprise Software Solutions</li>
+        </ul>
+        <p class="service-price">$199 - $999</p>
+        <button class="btn btn-primary" onclick="addToCart('A001', 'Software Development', 199, 999)">Add to Cart</button>
+    </div>
+    
+    <div class="service">
+        <h3>Data Analytics</h3>
+        <p>Unlock insights with our advanced data analytics services.</p>
+        <p>Services:</p>
+        <ul>
+            <li>Data Visualization</li>
+            <li>Predictive Analytics</li>
+            <li>Business Intelligence Solutions</li>
+        </ul>
+        <p class="service-price">$299 - $1499</p>
+        <button class="btn btn-primary" onclick="addToCart('A002', 'Data Analytics', 299, 1499)">Add to Cart</button>
+    </div>
+    
+    <div class="service">
+        <h3>Cloud Solutions</h3>
+        <p>Enhance your business with scalable and secure cloud computing services.</p>
+        <p>Services:</p>
+        <ul>
+            <li>Cloud Storage Solutions</li>
+            <li>Cloud Migration Services</li>
+            <li>Cloud Security Management</li>
+        </ul>
+        <p class="service-price">$299 - $1999</p>
+        <button class="btn btn-primary" onclick="addToCart('A003', 'Cloud Solutions', 299, 1999)">Add to Cart</button>
+    </div>
+    
+    <div class="service">
+        <h3>Cybersecurity</h3>
+        <p>Protect your business with our comprehensive cybersecurity services.</p>
+        <p>Services:</p>
+        <ul>
+            <li>Vulnerability Assessments</li>
+            <li>Penetration Testing</li>
+            <li>Managed Security Services</li>
+        </ul>
+        <p class="service-price">$499 - $2999</p>
+        <button class="btn btn-primary" onclick="addToCart('A004', 'Cybersecurity', 499, 2999)">Add to Cart</button>
+    </div>
+    
+    <div class="service">
+        <h3>IT Consulting</h3>
+        <p>Optimize your IT infrastructure with our expert consulting services.</p>
+        <p>Services:</p>
+        <ul>
+            <li>IT Strategy Development</li>
+            <li>Infrastructure Optimization</li>
+            <li>Technology Roadmapping</li>
+        </ul>
+        <p class="service-price">$199 - $1299</p>
+        <button class="btn btn-primary" onclick="addToCart('A005', 'IT Consulting', 199, 1299)">Add to Cart</button>
+    </div>
+
+    <div class="service">
+        <h3>Graphics Design</h3>
+        <p>Bring your brand to life with our creative design services.</p>
+        <p>Services:</p>
+        <ul>
+            <li>Logo Design</li>
+            <li>Brand Identity</li>
+            <li>Marketing Materials</li>
+        </ul>
+        <p class="service-price">$599 - $1999</p>
+        <button class="btn btn-primary" onclick="addToCart('A006', 'Graphics Design', 599, 1999)">Add to Cart</button>
+    </div>
+    
+    <div class="service">
+        <h3>Artificial Intelligence</h3>
+        <p>Leverage the power of AI to drive innovation and efficiency.</p>
+        <p>Services:</p>
+        <ul>
+            <li>AI Model Development</li>
+            <li>Natural Language Processing</li>
+            <li>Computer Vision Solutions</li>
+        </ul>
+        <p class="service-price">$399 - $2499</p>
+        <button class="btn btn-primary" onclick="addToCart('A007', 'Artificial Intelligence', 399, 2499)">Add to Cart</button>
+    </div>
+    
+    <div class="service">
+        <h3>Internet of Things (IoT)</h3>
+        <p>Transform your business with our cutting-edge IoT solutions.</p>
+        <p>Services:</p>
+        <ul>
+            <li>IoT Device Integration</li>
+            <li>IoT Data Analytics</li>
+            <li>Smart Home/Office Solutions</li>
+        </ul>
+        <p class="service-price">$299 - $1999</p>
+        <button class="btn btn-primary" onclick="addToCart('A008', 'Internet of Things (IoT)', 299, 1999)">Add to Cart</button>
+    </div>
+    
+    <div class="service">
+        <h3>Blockchain Development</h3>
+        <p>Innovate with our secure and transparent blockchain solutions.</p>
+        <p>Services:</p>
+        <ul>
+            <li>Blockchain App Development</li>
+            <li>Smart Contract Development</li>
+            <li>Cryptocurrency Solutions</li>
+        </ul>
+        <p class="service-price">$499 - $2999</p>
+        <button class="btn btn-primary" onclick="addToCart('A009', 'Blockchain Development', 499, 2999)">Add to Cart</button>
+    </div>
+    
+    <div class="service">
+        <h3>DevOps</h3>
+        <p>Improve collaboration and productivity with our DevOps services.</p>
+        <p>Services:</p>
+        <ul>
+            <li>Continuous Integration/Continuous Deployment (CI/CD)</li>
+            <li>Infrastructure as Code (IaC)</li>
+            <li>Automated Testing</li>
+        </ul>
+        <p class="service-price">$299 - $1999</p>
+        <button class="btn btn-primary" onclick="addToCart('A010', 'DevOps', 299, 1999)">Add to Cart</button>
+    </div>
+    
+    <div class="service">
+        <h3>IT Support</h3>
+        <p>Keep your business running smoothly with our reliable IT support services.</p>
+        <p>Services:</p>
+        <ul>
+            <li>Helpdesk Support</li>
+            <li>Network Management</li>
+            <li>System Maintenance</li>
+        </ul>
+        <p class="service-price">$99 - $999</p>
+        <button class="btn btn-primary" onclick="addToCart('A011', 'IT Support', 99, 999)">Add to Cart</button>
+    </div>
+    
+    <div class="service">
+        <h3>Digital Marketing</h3>
+        <p>Boost your online presence with our comprehensive digital marketing services.</p>
+        <p>Services:</p>
+        <ul>
+            <li>SEO Optimization</li>
+            <li>Social Media Marketing</li>
+            <li>Content Marketing</li>
+        </ul>
+        <p class="service-price">$199 - $1499</p>
+        <button class="btn btn-primary" onclick="addToCart('A012', 'Digital Marketing', 199, 1499)">Add to Cart</button>
+    </div>
+    
+</div>
+<input type="hidden" id="userLoggedIn" value="{{ 'true' if session.get('user_id') else 'false' }}">
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    let cart = [];
+
+    function addToCart(orderId, serviceName, minPrice, maxPrice) {
+        cart.push({orderId: orderId, service: serviceName, price: (minPrice + maxPrice) / 2, quantity: 1});
+        alert(`Added ${serviceName} to cart`);
+    }
+
+    function viewCart() {
+        let cartContent = '<h3>Your Cart</h3>';
+        cartContent += '<table class="cart-table">';
+        cartContent += '<tr><th>Order ID</th><th>Item</th><th>Quantity</th><th>Amount</th><th>Action</th></tr>';
+
+        let totalAmount = 0;
+
+        cart.forEach((item, index) => {
+            totalAmount += item.price * item.quantity;
+            cartContent += `<tr>
+                <td>${item.orderId}</td>
+                <td>${item.service}</td>
+                <td>
+                    <select onchange="updateQuantity(${index}, this.value)">
+                        ${[...Array(10).keys()].map(i => `<option value="${i+1}" ${i+1 === item.quantity ? 'selected' : ''}>${i+1}</option>`).join('')}
+                    </select>
+                </td>
+                <td>${(item.price * item.quantity).toFixed(2)}</td>
+                <td><button onclick="removeFromCart(${index})">Remove</button></td>
+            </tr>`;
+        });
+
+        cartContent += '</table>';
+        cartContent += `<div class="total-amount"><h4>Total Amount: $${totalAmount.toFixed(2)}</h4></div>`;
+        cartContent += '<button class="btn btn-primary" onclick="makePayment()">Make Payment</button>';
+
+        $('.container').html(cartContent);
+    }
+
+    function updateQuantity(index, quantity) {
+        cart[index].quantity = parseInt(quantity);
+        viewCart();
+    }
+
+    function removeFromCart(index) {
+        cart.splice(index, 1);
+        viewCart();
+    }
+
+    function makePayment() {
+        // Check if user is logged in
+        const userLoggedIn = document.getElementById('userLoggedIn').value === 'true';
+
+        if (userLoggedIn) {
+            storeOrderData();
+            window.location.href = "{{ url_for('payment') }}";
+        } else {
+            alert('Please login to make payment');
+            window.location.href = "{{ url_for('login') }}";
+        }
+    }
+
+    // Store the cart data in the session
+    function saveCart() {
+        $.ajax({
+            url: "{{ url_for('save_cart') }}",
+            type: "POST",
+            data: JSON.stringify(cart),
+            contentType: "application/json",
+            success: function(response) {
+                console.log('Cart data saved successfully');
+            },
+            error: function(error) {
+                console.log('Error saving cart data', error);
+            }
+        });
+    }
+
+    // Store the order data in the database or API endpoint
+    function storeOrderData() {
+        $.ajax({
+            url: "{{ url_for('store_order_data') }}",
+            type: "POST",
+            data: JSON.stringify(cart),
+            contentType: "application/json",
+            success: function(response) {
+                console.log('Order data stored successfully');
+            },
+            error: function(error) {
+                console.log('Error storing order data', error);
+            }
+        });
+    }
+
+    $(document).ready(function() {
+        // Load cart from session if exists
+        if (cart.length > 0) {
+            viewCart();
+        }
+    });
+</script>
+
+</body>
+</html>

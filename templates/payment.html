@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Payment Form</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/3.1.3/socket.io.min.js"></script>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            background: url("{{ url_for('static', filename='images/image_16.jpg') }}") no-repeat center center fixed;
+            background-size: cover;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        /* Custom Navbar Styles */
+        .navbar-custom {
+            background-color: #007bff; /* Blue background color */
+            height: 50px; /* Smaller height */
+            width: 100%; /* Full width */
+            position: fixed; /* Fixed at the top */
+            top: 0;
+            left: 0;
+            z-index: 1030; /* Ensure it is above other content */
+        }
+        .navbar-custom .navbar-brand,
+        .navbar-custom .nav-link {
+            color: white; /* White text color */
+        }
+        .navbar-custom .navbar-brand:hover,
+        .navbar-custom .nav-link:hover {
+            color: #ffdd57; /* Change color on hover */
+        }
+        .navbar-custom .navbar-toggler-icon {
+            color: white; /* White color for toggler icon */
+        }
+        /* Ensure the page is scrollable */
+        html, body {
+            height: 100%;
+            overflow: auto;
+            padding-top: 50px; /* Offset for fixed navbar */
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-custom">
+        <a class="navbar-brand" href="#">RoyalTech Company (U) LTD</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                {% if 'user_id' in session %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('home_page') }}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('payment') }}">Payment</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('login') }}">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('register') }}">Register</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+    
+    <!-- Main Content Section -->
+    <div class="container">
+        <h1 class="text-center" style="font-family: 'Roboto', Arial, sans-serif; color: purple">Welcome to the Payment Page</h1>
+        <div id="spinner" style="display:none;">
+            <p>Processing your payment, please wait...</p>
+            <div class="spinner-border" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+        </div>
+    
+        <form id="payment-form">
+            <div class="form-group">
+                <label for="orderId">Order ID: <span style="color: red;">*</span></label>
+                <input type="text" class="form-control" id="orderId" name="orderId" autocomplete="off" required>
+            </div>
+            <div class="form-group">
+                <label for="transactionType">Transaction Type: <span style="color: red;">*</span></label>
+                <select class="form-control" id="transactionType" name="transactionType" required>
+                    <option value="" disabled selected>Select type</option>
+                    <option value="CASH_OUT">CASH_OUT</option>
+                    <option value="PAYMENT">PAYMENT</option>
+                    <option value="CASH_IN">CASH_IN</option>
+                    <option value="TRANSFER">TRANSFER</option>
+                    <option value="DEBIT">DEBIT</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="amount">Amount: <span style="color: red;">*</span></label>
+                <input type="text" class="form-control" id="amount" name="amount" autocomplete="off" required>
+                <small id="amountHelp" class="form-text text-danger"></small>
+            </div>
+            <div class="form-group">
+                <label for="oldBalance">Old Balance: <span style="color: red;">*</span></label>
+                <input type="text" class="form-control" id="oldBalance" name="oldBalance" required>
+                <small id="oldBalanceHelp" class="form-text text-danger"></small>
+            </div>
+            <div class="form-group">
+                <label for="newBalance">New Balance: <span style="color: red;">*</span></label>
+                <input type="text" class="form-control" id="newBalance" name="newBalance" required>
+                <small id="newBalanceHelp" class="form-text text-danger"></small>
+            </div>
+            <div class="form-group">
+                <label for="cardNumber">Card Number: <span style="color: red;">*</span></label>
+                <input type="text" class="form-control" id="cardNumber" name="cardNumber" placeholder="**** **** **** ****" required>
+                <small id="cardNumberHelp" class="form-text text-danger"></small>
+            </div>
+            <div class="form-group">
+                <label for="expiryDate">Expiry Date: <span style="color: red;">*</span></label>
+                <input type="text" class="form-control" id="expiryDate" name="expiryDate" placeholder="MM/YY" required>
+                <small id="expiryDateHelp" class="form-text text-danger"></small>
+            </div>
+            <div class="form-group">
+                <label for="cvv">CVV: <span style="color: red;">*</span></label>
+                <input type="text" class="form-control" id="cvv" name="cvv" placeholder="***" required>
+                <small id="cvvHelp" class="form-text text-danger"></small>
+            </div>
+            <div class="form-group">
+                <label for="email">Email: <span style="color: red;">*</span></label>
+                <input type="email" class="form-control" id="email" name="email" required>
+                <small id="emailHelp" class="form-text text-danger"></small>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit Payment</button>
+        </form>
+    </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Fetch the latest order ID and amount for the logged-in user
+            $.ajax({
+                type: 'GET',
+                url: "{{ url_for('get_order_details') }}",
+                success: function(data) {
+                    $('#orderId').val(data.order_id);
+
+                    // Fetch the order details to get the amount
+                    $.ajax({
+                        type: 'GET',
+                        url: "{{ url_for('get_order_details') }}",
+                        success: function(data) {
+                            $('#amount').val(data.amount);
+                        },
+                        error: function(err) {
+                            console.log('Error fetching order details:', err);
+                        }
+                    });
+                },
+                error: function(err) {
+                    console.log('Error fetching latest order ID:', err);
+                }
+            });
+
+            // Real-time validation for amount
+            $('#amount').on('input', function() {
+                validateAmount();
+            });
+
+            // Real-time validation for old balance
+            $('#oldBalance').on('input', function() {
+                validateOldBalance();
+            });
+
+            // Real-time validation for new balance
+            $('#newBalance').on('input', function() {
+                validateNewBalance();
+            });
+
+            // Real-time validation for card number
+            $('#cardNumber').on('input', function() {
+                validateCardNumber();
+            });
+
+            // Real-time validation for expiry date
+            $('#expiryDate').on('input', function() {
+                validateExpiryDate();
+            });
+
+            // Real-time validation for CVV
+            $('#cvv').on('input', function() {
+                validateCVV();
+            });
+
+            // Real-time validation for email
+            $('#email').on('input', function() {
+                validateEmail();
+            });
+
+            // Form submission with validation
+            $('#payment-form').submit(function(event) {
+                event.preventDefault(); // Prevent the default form submission
+
+                if (validateForm()) { // Perform all validations before submitting
+                    var formData = {
+                        orderId: $('#orderId').val(),
+                        transactionType: $('#transactionType').val(),
+                        amount: $('#amount').val(),
+                        oldBalance: $('#oldBalance').val(),
+                        newBalance: $('#newBalance').val(),
+                        cardNumber: $('#cardNumber').val(),
+                        expiryDate: $('#expiryDate').val(),
+                        cvv: $('#cvv').val(),
+                        email: $('#email').val()
+                    };
+
+                    $.ajax({
+                        type: 'POST',
+                        url: "{{ url_for('predict_payment') }}",
+                        contentType: 'application/json',
+                        data: JSON.stringify(formData),
+                        success: function(predictionResponse) {
+                            if (predictionResponse.error) {
+                                $('#result').text('Error: ' + predictionResponse.error);
+                                console.error('Error predicting payment:', predictionResponse.error);
+                                return;
+                            }
+
+                            if (predictionResponse.prediction === 'Fraud') {
+                                alert('Transaction flagged as fraud');
+                            } else {
+                                alert('Payment sent successfully! Please check your email for the status of your payment.');
+                            }
+                            // Redirect to the home page after notification
+                            window.location.href = "{{ url_for('home_page') }}";
+                        },
+                        error: function(error) {
+                            $('#result').text('Error: ' + error.responseJSON.error);
+                            console.error('Error predicting payment:', error);
+                        }
+                    });
+                }
+            });
+
+            function validateForm() {
+                return validateAmount() && validateOldBalance() && validateNewBalance() && validateCardNumber() && validateExpiryDate() && validateCVV() && validateEmail();
+            }
+            // Validation functions
+            function validateAmount() {
+                var amount = $('#amount').val();
+                if (!/^\d+(\.\d{1,2})?$/.test(amount)) {
+                    $('#amountHelp').text('Invalid amount. Must be a valid number with up to two decimal places.');
+                    return false;
+                } else {
+                    $('#amountHelp').text('');
+                    return true;
+                }
+            }
+
+            function validateOldBalance() {
+                var oldBalance = $('#oldBalance').val();
+                if (!/^\d+(\.\d{1,2})?$/.test(oldBalance)) {
+                    $('#oldBalanceHelp').text('Invalid balance. Must be a valid number with up to two decimal places.');
+                    return false;
+                } else {
+                    $('#oldBalanceHelp').text('');
+                    return true;
+                }
+            }
+
+            function validateNewBalance() {
+                var newBalance = $('#newBalance').val();
+                if (!/^\d+(\.\d{1,2})?$/.test(newBalance)) {
+                    $('#newBalanceHelp').text('Invalid balance. Must be a valid number with up to two decimal places.');
+                    return false;
+                } else {
+                    $('#newBalanceHelp').text('');
+                    return true;
+                }
+            }
+
+            function validateCardNumber() {
+                var cardNumber = $('#cardNumber').val();
+                if (!/^\d{16}$/.test(cardNumber)) {
+                    $('#cardNumberHelp').text('Invalid card number. Must be 16 digits.');
+                    return false;
+                } else {
+                    $('#cardNumberHelp').text('');
+                    return true;
+                }
+            }
+
+            function validateExpiryDate() {
+                var expiryDate = $('#expiryDate').val();
+                if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(expiryDate)) {
+                    $('#expiryDateHelp').text('Invalid expiry date. Must be in MM/YY format.');
+                    return false;
+                } else {
+                    $('#expiryDateHelp').text('');
+                    return true;
+                }
+            }
+
+            function validateCVV() {
+                var cvv = $('#cvv').val();
+                if (!/^\d{3}$/.test(cvv)) {
+                    $('#cvvHelp').text('Invalid CVV. Must be 3 digits.');
+                    return false;
+                } else {
+                    $('#cvvHelp').text('');
+                    return true;
+                }
+            }
+
+            function validateEmail() {
+                var email = $('#email').val();
+                var emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailPattern.test(email)) {
+                    $('#emailHelp').text('Invalid email address.');
+                    return false;
+                } else {
+                    $('#emailHelp').text('');
+                    return true;
+                }
+            }
+
+            // Function to update payment status in database
+            function updatePaymentStatus(id, status) {
+                // Prepare data to send including prediction status
+                var data = {
+                    paymentId: id,
+                    status: status,
+                };
+
+                // Make AJAX request to update payment status in your database
+                $.ajax({
+                    type: 'POST',
+                    url: "{{ url_for('update_payment_status') }}",
+                    contentType: 'application/json',
+                    data: JSON.stringify(data),
+                    success: function(response) {
+                        // Handle success response if needed
+                        console.log('Payment status updated successfully');
+                    },
+                    error: function(error) {
+                        // Handle error if necessary
+                        console.error('Error updating payment status:', error);
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
