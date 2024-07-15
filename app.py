@@ -4,6 +4,7 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 from werkzeug.security import generate_password_hash, check_password_hash
 from wtforms import StringField, PasswordField, SubmitField, SelectField
 from wtforms.validators import DataRequired, Length, Email, EqualTo
+from apscheduler.schedulers.background import BackgroundScheduler
 from logging.handlers import RotatingFileHandler
 from fraud_detection_model.auth import auth_bp
 from werkzeug.utils import secure_filename
@@ -114,6 +115,23 @@ def create_table():
     conn.close()
 
 create_table()
+
+# Vaccum the database to optimize unused space
+def get_db_file_size():
+    return os.path.getsize(DB_PATH)
+
+def vacuum_database():
+    before_size = get_db_file_size()
+    print(f"Database size before vacuum: {before_size} bytes")
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute('VACUUM')
+    conn.commit()
+    conn.close()
+
+    after_size = get_db_file_size()
+    print(f"Database size after vacuum: {after_size} bytes")
 
 # Define a User class for Flask-Login
 class User(UserMixin):
@@ -923,4 +941,14 @@ def logout():
 
 # Running the flask app
 if __name__ == '__main__':
-    socketio.run(app, debug=True)
+    # Set up the scheduler
+    scheduler = BackgroundScheduler()
+    # Schedule the vacuum_database function to run every day at midnight
+    scheduler.add_job(vacuum_database, 'cron', hour=0)
+    # Start the scheduler
+    scheduler.start()
+    
+    try:
+        socketio.run(app, debug=True)
+    except (KeyboardInterrupt, SystemExit):
+        scheduler.shutdown()
